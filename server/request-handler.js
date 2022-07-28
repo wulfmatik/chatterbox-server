@@ -78,6 +78,7 @@ var requestHandler = function(request, response) {
     response.end('404: Page Not Found');
   }
 
+
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
