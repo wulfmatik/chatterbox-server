@@ -19,7 +19,7 @@ var defaultCorsHeaders = {
   'access-control-allow-headers': 'content-type, accept, authorization',
   'access-control-max-age': 10 // Seconds.
 };
-
+var allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
 
 var _data = [];
 
@@ -46,7 +46,12 @@ var requestHandler = function(request, response) {
   // Tell the client we are sending them plain text.
   headers['Content-Type'] = 'text/plain';
 
-  if (request.method === 'GET' && request.url === '/classes/messages') {
+  if (request.method === 'OPTIONS' && request.url === '/classes/messages') {
+    // .writeHead() writes to the request line and headers of the response,
+    // which includes the status and all headers.
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify(allowedMethods));
+  } else if (request.method === 'GET' && request.url === '/classes/messages') {
     // .writeHead() writes to the request line and headers of the response,
     // which includes the status and all headers.
     response.writeHead(statusCode, headers);
@@ -63,6 +68,10 @@ var requestHandler = function(request, response) {
       _data.push(JSON.parse(body));
       response.end(JSON.stringify(_data));
     });
+  } else if (!allowedMethods.includes(request.method)) {
+    statusCode = 405;
+    response.writeHead(statusCode, headers);
+    response.end('405: Method Not Allowed');
   } else {
     statusCode = 404;
     response.writeHead(statusCode, headers);
