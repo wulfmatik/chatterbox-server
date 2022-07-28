@@ -20,9 +20,9 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+
 var _data = [];
 
-debugger;
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -39,45 +39,35 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  // console.log('request: ', request);
-  // console.log('request url: ', request.url);
+
   // The outgoing status.
   var statusCode = 200;
+  var headers = defaultCorsHeaders;
+  // Tell the client we are sending them plain text.
+  headers['Content-Type'] = 'text/plain';
+
   if (request.method === 'GET' && request.url === '/classes/messages') {
-    var headers = defaultCorsHeaders;
-    headers['Content-Type'] = 'text/plain';
+    // .writeHead() writes to the request line and headers of the response,
+    // which includes the status and all headers.
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(_data));
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     statusCode = 201;
-    var headers = defaultCorsHeaders;
-    headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
-    console.log('request._postData----->', request._postData);
-    request.on('data', (chunk) => {
-      console.log('chunk----->', chunk.toString('ascii'));
-      _data.push(chunk);
-    }).on('end', () => {
-      _data = Buffer.concat(_data).toString();
+
+    var body = '';
+    request.on('data', chunk => {
+      body += chunk.toString();
+    });
+    request.on('end', () => {
+      _data.push(JSON.parse(body));
+      response.end(JSON.stringify(_data));
     });
   } else {
     statusCode = 404;
-    var headers = defaultCorsHeaders;
-    headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
     response.end('404: Page Not Found');
   }
-  // See the note below about CORS headers.
-
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-
-
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
