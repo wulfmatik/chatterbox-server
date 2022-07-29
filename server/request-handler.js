@@ -46,7 +46,44 @@ var requestHandler = function(request, response) {
   // Tell the client we are sending them plain text.
   headers['Content-Type'] = 'text/plain';
 
-  if (request.method === 'OPTIONS' && request.url === '/classes/messages') {
+
+  if (request.method === 'PUT' && request.url === '/classes/messages') {
+    let body = '';
+    request.on('data', chunk => {
+      body += chunk.toString();
+    });
+    var requestData = JSON.parse(body);
+    var flag = false;
+
+    for (var i = 0; i < _data.length; i++) {
+      if (requestData.username === _data[i].username) {
+        var text = requestData.text.split('@@@@@');
+        if (_data[i].text === text[0]) {
+          _data[i].text = text[1];
+          flag = true;
+          statusCode = 200;
+          response.writeHead(statusCode, headers);
+          request.on('end', () => {
+            response.end(JSON.stringify(_data));
+          });
+          break;
+        }
+      }
+    }
+    if (flag === false) {
+      for (var j = 0; j < _data.length; j++) {
+        if (requestData.username !== _data[j].username) {
+          statusCode = 200;
+          response.writeHead(statusCode, headers);
+          request.on('end', () => {
+            _data.push(JSON.parse(body));
+            response.end(JSON.stringify(_data));
+          });
+          break;
+        }
+      }
+    }
+  } else if (request.method === 'OPTIONS' && request.url === '/classes/messages') {
     // .writeHead() writes to the request line and headers of the response,
     // which includes the status and all headers.
     response.writeHead(statusCode, headers);
@@ -60,7 +97,7 @@ var requestHandler = function(request, response) {
     statusCode = 201;
     response.writeHead(statusCode, headers);
 
-    var body = '';
+    let body = '';
     request.on('data', chunk => {
       body += chunk.toString();
     });

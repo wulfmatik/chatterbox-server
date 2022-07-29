@@ -65,6 +65,50 @@ describe('Node Server Request Listener Function', function() {
     expect(res._ended).to.equal(true);
   });
 
+  it('Should create new message if user not found', function() {
+    var stubMsg = {
+      username: 'Jono',
+      text: 'Do my bidding!'
+    };
+    var updatedStubMsg = {
+      username: 'Jojo',
+      text: 'I love skydiving!'
+    };
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    var res = new stubs.response();
+    handler.requestHandler(req, res);
+
+    var req = new stubs.request('/classes/messages', 'PUT', updatedStubMsg);
+    var res = new stubs.response();
+    handler.requestHandler(req, res);
+
+    expect(res._responseCode).to.equal(200);
+    var messages = JSON.parse(res._data);
+    expect(messages.length).to.be.above(0);
+    expect(messages[2].username).to.equal('Jojo');
+    expect(messages[2].text).to.equal('I love skydiving!');
+    expect(res._ended).to.equal(true);
+  });
+
+  it('Should allow user to edit message', function() {
+    var stubMsg = {
+      username: 'Jojo',
+      text: 'I love skydiving!@@@@@This is my updated Message!'
+    };
+    var req = new stubs.request('/classes/messages', 'PUT', stubMsg);
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+
+    //expect(res._responseCode).to.equal(200);
+    var messages = JSON.parse(res._data);
+    console.log('edit', messages);
+    expect(messages.length).to.be.above(0);
+    expect(messages[2].username).to.equal('Jojo');
+    expect(messages[2].text).to.equal('This is my updated Message!');
+    expect(res._ended).to.equal(true);
+  });
+
   it('Should respond with messages that were previously posted', function() {
     var stubMsg = {
       username: 'Jono',
@@ -125,13 +169,14 @@ describe('Node Server Request Listener Function', function() {
 
     expect(res._responseCode).to.equal(200);
     var messages = JSON.parse(res._data);
+    console.log('all messages', messages);
     expect(messages.length).to.be.above(0);
-    expect(messages[2].username).to.equal('Jono');
-    expect(messages[2].text).to.equal('Do my bidding!');
-    expect(messages[3].username).to.equal('Chuck');
-    expect(messages[3].text).to.equal('I am tired');
-    expect(messages[4].username).to.equal('Blake');
-    expect(messages[4].text).to.equal('Testing is easy');
+    expect(messages[4].username).to.equal('Jono');
+    expect(messages[4].text).to.equal('Do my bidding!');
+    expect(messages[5].username).to.equal('Chuck');
+    expect(messages[5].text).to.equal('I am tired');
+    expect(messages[6].username).to.equal('Blake');
+    expect(messages[6].text).to.equal('Testing is easy');
     expect(res._ended).to.equal(true);
   });
 
