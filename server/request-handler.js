@@ -103,7 +103,8 @@ var requestHandler = function(request, response) {
     });
     request.on('end', () => {
       _data.push(JSON.parse(body));
-      response.end(JSON.stringify(_data));
+      // response.end(JSON.stringify(_data));
+      response.end();
     });
   } else if (!allowedMethods.includes(request.method)) {
     statusCode = 405;

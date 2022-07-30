@@ -1,24 +1,49 @@
 var Friends = {
+  // TODO: Define how you want to store your list of friends.
+  friendList: {},
 
+  _data: null,
 
-  _data: new Set,
+  // TODO: Define methods which allow you to add, toggle,
+  // and check the friendship status of other users.
 
-  items: function() {
-    return _.chain([...Friends._data]);
+  initialize: function() {
+    Friends.handleClick(event);
   },
 
-  isFriend: function(name) {
-    return Friends._data.has(name);
-  },
-
-  toggleStatus: function(name, callback = ()=>{}) {
-    if (Friends._data.has(name)) {
-      Friends._data.delete(name);
-      callback(false);
+  toggleStatus: function(username) {
+    if (!Friends.friendList.hasOwnProperty(username)) {
+      Friends.friendList[username] = true;
     } else {
-      Friends._data.add(name);
-      callback(true);
+      Friends.friendList[username] = !Friends.friendList[username];
     }
+  },
+
+  handleClick: function(event) {
+    $('body').on('click', '.chat', function(event) {
+      var target = $(this).find('.username').html();
+      var username = target.slice(0, target.length - 2);
+      Friends.toggleStatus(username);
+      for (var k in Friends.friendList) {
+        if (Friends.friendList[k] === true) {
+          Friends.highlight(k);
+        } else {
+          Friends.unHighlight(k);
+        }
+      }
+    });
+  },
+
+  highlight: function(username) {
+    $('.username:contains(' + username + ')').css({
+      'color': 'peru'
+    });
+  },
+
+  unHighlight: function(username) {
+    $('.username:contains(' + username + ')').css({
+      'color': 'black'
+    });
   }
-  
+
 };
